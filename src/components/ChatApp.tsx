@@ -167,18 +167,24 @@ function ChatApp() {
       </div>
 
       {/* Hamburger for mobile */}
-      <button
-        className="md:hidden fixed top-4 left-4 z-50 p-2 bg-white dark:bg-gray-900 rounded-full shadow-lg border border-gray-200 dark:border-gray-700"
-        onClick={() => setSidebarOpen(!sidebarOpen)}
-        aria-label="Toggle sidebar"
-      >
-        <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="18" x2="21" y2="18" /></svg>
-      </button>
+      <div className="md:hidden fixed top-16 left-4 z-40">
+        <button
+          className="p-2 bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm rounded-xl shadow-lg border border-gray-200/50 dark:border-gray-700/50 hover:bg-white dark:hover:bg-gray-900 transition-all duration-200"
+          onClick={() => setSidebarOpen(!sidebarOpen)}
+          aria-label="Toggle sidebar"
+        >
+          <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-600 dark:text-gray-300">
+            <line x1="3" y1="12" x2="21" y2="12" />
+            <line x1="3" y1="6" x2="21" y2="6" />
+            <line x1="3" y1="18" x2="21" y2="18" />
+          </svg>
+        </button>
+      </div>
 
       {/* Main Content */}
       <div className="relative z-10 h-screen flex flex-col md:flex-row">
         {/* Sidebar */}
-        <div className={`fixed md:static top-0 left-0 h-full z-40 transition-transform duration-300 md:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 md:flex w-64 md:w-80`}> 
+        <div className={`fixed md:static top-0 left-0 h-full z-30 transition-transform duration-300 md:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 md:flex w-64 md:w-80`}> 
           <Sidebar 
             isDarkMode={isDarkMode}
             conversations={conversations}
@@ -194,7 +200,7 @@ function ChatApp() {
         </div>
         {/* Overlay for mobile sidebar */}
         {sidebarOpen && (
-          <div className="fixed inset-0 bg-black/40 z-30 md:hidden" onClick={() => setSidebarOpen(false)}></div>
+          <div className="fixed inset-0 bg-black/40 z-20 md:hidden" onClick={() => setSidebarOpen(false)}></div>
         )}
 
         {/* Main Content Area */}

@@ -272,14 +272,17 @@ export const Sidebar: React.FC<SidebarProps> = ({
   );
 
   return (
-    <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-r border-gray-200/50 dark:border-gray-700/50 flex flex-col h-full w-64 md:w-80 max-w-full md:relative fixed z-50 md:z-auto left-0 top-0 bottom-0 transition-transform duration-300 md:translate-x-0">
+    <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-r border-gray-200/50 dark:border-gray-700/50 flex flex-col h-full w-64 md:w-80 max-w-full md:relative fixed z-40 md:z-auto left-0 top-0 bottom-0 transition-transform duration-300 md:translate-x-0">
       {/* Mobile close button */}
       <button
-        className="md:hidden absolute top-4 right-4 z-50 p-2 bg-white dark:bg-gray-900 rounded-full shadow border border-gray-200 dark:border-gray-700"
+        className="md:hidden absolute top-4 right-4 z-50 p-2 bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm rounded-full shadow-lg border border-gray-200/50 dark:border-gray-700/50 hover:bg-white dark:hover:bg-gray-900 transition-all duration-200"
         onClick={() => typeof window !== 'undefined' && window.dispatchEvent(new CustomEvent('closeSidebar'))}
         aria-label="Close sidebar"
       >
-        <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+        <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-600 dark:text-gray-300">
+          <line x1="18" y1="6" x2="6" y2="18" />
+          <line x1="6" y1="6" x2="18" y2="18" />
+        </svg>
       </button>
       {/* Header */}
       <div className="p-6 border-b border-gray-200/50 dark:border-gray-700/50 flex-shrink-0">

@@ -41,7 +41,6 @@ export const Header: React.FC<HeaderProps> = ({
   const [userDetails, setUserDetails] = useState<UserDetails | null>(null);
   const [showSettings, setShowSettings] = useState(false);
   const navigate = useNavigate();
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(async (currentUser) => {
@@ -103,22 +102,26 @@ export const Header: React.FC<HeaderProps> = ({
 
   return (
     <>
-      <header className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-b border-gray-200/50 dark:border-gray-700/50 px-3 py-2 sm:px-6 sm:py-4 sticky top-0 z-20 w-full">
+      <header className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-b border-gray-200/50 dark:border-gray-700/50 px-3 py-2 sm:px-6 sm:py-4 sticky top-0 z-30 w-full">
         <div className="flex flex-row items-center justify-between max-w-full sm:max-w-6xl mx-auto">
           {/* Left: Logo and Model Selector */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center shadow-lg">
               <span className="text-white text-sm font-bold">AI</span>
             </div>
-            <div>
+            <div className="hidden sm:block">
               <h1 className="text-lg font-bold text-gray-900 dark:text-white">GPT</h1>
               <p className="text-xs text-gray-500 dark:text-gray-400">
                 {AI_MODELS.find(m => m.id === selectedModel)?.name || 'AI Assistant'}
               </p>
             </div>
+            {/* Mobile: Show just the title */}
+            <div className="sm:hidden">
+              <h1 className="text-base font-bold text-gray-900 dark:text-white">GPT AI</h1>
+            </div>
             {/* Model Selector (chat mode only) */}
             {currentMode === 'chat' && (
-              <div className="relative w-full max-w-xs ml-4">
+              <div className="relative w-full max-w-xs ml-2 sm:ml-4 hidden sm:block">
                 <select
                   value={selectedModel}
                   onChange={(e) => onModelChange(e.target.value)}
@@ -135,46 +138,36 @@ export const Header: React.FC<HeaderProps> = ({
                 </div>
               </div>
             )}
-            {/* New Chat Button for Image/Video modes */}
+          </div>
+
+          {/* Right: Actions - Always visible but responsive */}
+          <div className="flex items-center space-x-1 sm:space-x-2">
+            {/* New Chat Button for Image/Video modes - Mobile responsive */}
             {(currentMode === 'image' || currentMode === 'video') && onNewChat && (
               <button
                 onClick={onNewChat}
-                className={`flex items-center space-x-2 px-4 py-2 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105 ml-4 ${
+                className={`flex items-center space-x-1 sm:space-x-2 px-2 sm:px-4 py-2 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105 ${
                   currentMode === 'image'
                     ? 'bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white'
                     : 'bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white'
                 }`}
               >
-                <MessageSquarePlus size={16} />
-                <span className="text-sm font-medium">New Chat</span>
+                <MessageSquarePlus size={14} className="sm:w-4 sm:h-4" />
+                <span className="text-xs sm:text-sm font-medium hidden sm:inline">New Chat</span>
               </button>
             )}
-          </div>
-
-          {/* Right: All actions and hamburger menu */}
-          <div className="flex items-center gap-2">
-            {/* Hamburger for user actions on mobile */}
-            <div className="sm:hidden">
-              <button
-                className="p-2 rounded-lg bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700"
-                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                aria-label="Open user menu"
-              >
-                <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="18" x2="21" y2="18" /></svg>
-              </button>
-            </div>
-
-            {/* User actions and controls (desktop or mobile menu) */}
-            <div className={`sm:flex flex-row items-center space-x-2 ${mobileMenuOpen ? 'flex' : 'hidden'} w-full sm:w-auto bg-white dark:bg-gray-900 sm:bg-transparent sm:dark:bg-transparent p-4 sm:p-0 rounded-xl sm:rounded-none shadow-lg sm:shadow-none absolute sm:static top-14 right-0 z-50`}>
+            
+            {/* Action buttons - Responsive sizing */}
+            <div className="flex items-center space-x-1 sm:space-x-2">
               {/* Export Chat */}
               {currentMode === 'chat' && (
                 <button
                   onClick={onExportChat}
                   disabled={messageCount === 0}
-                  className="p-2.5 rounded-xl bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 group"
+                  className="p-2 sm:p-2.5 rounded-xl bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 group"
                   title="Export chat"
                 >
-                  <Download size={16} className="text-gray-600 dark:text-gray-300 group-hover:text-blue-500" />
+                  <Download size={14} className="sm:w-4 sm:h-4 text-gray-600 dark:text-gray-300 group-hover:text-blue-500" />
                 </button>
               )}
               {/* Clear Chat */}
@@ -182,27 +175,27 @@ export const Header: React.FC<HeaderProps> = ({
                 <button
                   onClick={onClearChat}
                   disabled={messageCount === 0}
-                  className="p-2.5 rounded-xl bg-gray-100 dark:bg-gray-800 hover:bg-red-100 dark:hover:bg-red-900/30 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 group"
+                  className="p-2 sm:p-2.5 rounded-xl bg-gray-100 dark:bg-gray-800 hover:bg-red-100 dark:hover:bg-red-900/30 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 group"
                   title="Clear chat"
                 >
-                  <Trash2 size={16} className="text-gray-600 dark:text-gray-300 group-hover:text-red-500" />
+                  <Trash2 size={14} className="sm:w-4 sm:h-4 text-gray-600 dark:text-gray-300 group-hover:text-red-500" />
                 </button>
               )}
               {/* Settings - Only show for logged in users */}
               {user && (
                 <button
                   onClick={handleSettingsOpen}
-                  className="p-2.5 rounded-xl bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all duration-200 group"
+                  className="p-2 sm:p-2.5 rounded-xl bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all duration-200 group"
                   title="Settings"
                 >
-                  <Settings size={16} className="text-gray-600 dark:text-gray-300 group-hover:text-gray-800 dark:group-hover:text-gray-100" />
+                  <Settings size={14} className="sm:w-4 sm:h-4 text-gray-600 dark:text-gray-300 group-hover:text-gray-800 dark:group-hover:text-gray-100" />
                 </button>
               )}
               {/* User Section */}
               {user ? (
                 <div className="flex items-center space-x-3">
                   <div className="flex items-center space-x-2 px-3 py-2 bg-green-50 dark:bg-green-900/20 rounded-xl border border-green-200 dark:border-green-800">
-                    <div className="w-6 h-6 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center overflow-hidden">
+                    <div className="w-5 h-5 sm:w-6 sm:h-6 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center overflow-hidden">
                       {userDetails?.photo ? (
                         <img
                           src={userDetails.photo}
@@ -210,39 +203,40 @@ export const Header: React.FC<HeaderProps> = ({
                           className="w-full h-full object-cover"
                         />
                       ) : (
-                        <User size={12} className="text-white" />
+                        <User size={10} className="sm:w-3 sm:h-3 text-white" />
                       )}
                     </div>
-                    <span className="text-sm font-medium text-green-700 dark:text-green-300">
+                    <span className="text-xs sm:text-sm font-medium text-green-700 dark:text-green-300 hidden sm:inline">
                       {userDetails?.firstName || user.email?.split('@')[0]}
                     </span>
                   </div>
                   <button
                     onClick={handleSignOut}
-                    className="flex items-center space-x-2 px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
+                    className="flex items-center space-x-1 sm:space-x-2 px-2 sm:px-4 py-2 text-xs sm:text-sm font-medium text-white bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
                   >
-                    <LogOut size={16} />
-                    <span>Sign Out</span>
+                    <LogOut size={14} className="sm:w-4 sm:h-4" />
+                    <span className="hidden sm:inline">Sign Out</span>
                   </button>
                 </div>
               ) : (
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center space-x-1 sm:space-x-2">
                   <button
                     onClick={handleSignIn}
-                    className="flex items-center space-x-2 px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200"
+                    className="flex items-center space-x-1 sm:space-x-2 px-2 sm:px-4 py-2 text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200"
                   >
-                    <LogIn size={16} />
-                    <span>Sign In</span>
+                    <LogIn size={14} className="sm:w-4 sm:h-4" />
+                    <span className="hidden sm:inline">Sign In</span>
                   </button>
                   <button
                     onClick={handleSignUp}
-                    className="flex items-center space-x-2 px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
+                    className="flex items-center space-x-1 sm:space-x-2 px-2 sm:px-4 py-2 text-xs sm:text-sm font-medium text-white bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
                   >
-                    <UserPlus size={16} />
-                    <span>Sign Up</span>
+                    <UserPlus size={14} className="sm:w-4 sm:h-4" />
+                    <span className="hidden sm:inline">Sign Up</span>
                   </button>
                 </div>
               )}
+            </div>
             </div>
           </div>
         </div>

@@ -1,0 +1,262 @@
+import React, { useState, useEffect } from 'react';
+import { Download, Trash2, Settings, MoreVertical, User, LogOut, LogIn, UserPlus, MessageSquarePlus } from 'lucide-react';
+import { AI_MODELS } from '../constants/models';
+import { auth, db } from '../firebase';
+import { doc, getDoc } from 'firebase/firestore';
+import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
+import { SettingsModal } from './SettingsModal';
+
+interface HeaderProps {
+  isDarkMode: boolean;
+  selectedModel: string;
+  messageCount: number;
+  currentMode?: 'chat' | 'video' | 'image';
+  onToggleTheme: () => void;
+  onModelChange: (model: string) => void;
+  onClearChat: () => void;
+  onExportChat: () => void;
+  onSettingsChange?: (isOpen: boolean) => void;
+  onNewChat?: () => void;
+}
+
+interface UserDetails {
+  email: string;
+  firstName: string;
+  lastName?: string;
+  photo: string;
+}
+
+export const Header: React.FC<HeaderProps> = ({
+  selectedModel,
+  messageCount,
+  currentMode = 'chat',
+  onModelChange,
+  onClearChat,
+  onExportChat,
+  onSettingsChange,
+  onNewChat,
+}) => {
+  const [user, setUser] = useState<any>(null);
+  const [userDetails, setUserDetails] = useState<UserDetails | null>(null);
+  const [showSettings, setShowSettings] = useState(false);
+  const navigate = useNavigate();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged(async (currentUser) => {
+      setUser(currentUser);
+      
+      if (currentUser) {
+        try {
+          const docRef = doc(db, "Users", currentUser.uid);
+          const docSnap = await getDoc(docRef);
+          
+          if (docSnap.exists()) {
+            setUserDetails(docSnap.data() as UserDetails);
+          }
+        } catch (error) {
+          console.error("Error fetching user data:", error);
+        }
+      } else {
+        setUserDetails(null);
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    if (onSettingsChange) {
+      onSettingsChange(showSettings);
+    }
+  }, [showSettings, onSettingsChange]);
+
+  const handleSignOut = async () => {
+    try {
+      await auth.signOut();
+      toast.success("Logged out successfully!", {
+        position: "top-center",
+      });
+    } catch (error: any) {
+      toast.error("Error logging out", {
+        position: "bottom-center",
+      });
+    }
+  };
+
+  const handleSignIn = () => {
+    navigate("/login");
+  };
+
+  const handleSignUp = () => {
+    navigate("/register");
+  };
+
+  const handleSettingsOpen = () => {
+    setShowSettings(true);
+  };
+
+  const handleSettingsClose = () => {
+    setShowSettings(false);
+  };
+
+  return (
+    <>
+      <header className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-b border-gray-200/50 dark:border-gray-700/50 px-3 py-2 sm:px-6 sm:py-4 sticky top-0 z-20 w-full">
+        <div className="flex flex-row items-center justify-between max-w-full sm:max-w-6xl mx-auto">
+          {/* Left: Logo and Model Selector */}
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center shadow-lg">
+              <span className="text-white text-sm font-bold">AI</span>
+            </div>
+            <div>
+              <h1 className="text-lg font-bold text-gray-900 dark:text-white">GPT</h1>
+              <p className="text-xs text-gray-500 dark:text-gray-400">
+                {AI_MODELS.find(m => m.id === selectedModel)?.name || 'AI Assistant'}
+              </p>
+            </div>
+            {/* Model Selector (chat mode only) */}
+            {currentMode === 'chat' && (
+              <div className="relative w-full max-w-xs ml-4">
+                <select
+                  value={selectedModel}
+                  onChange={(e) => onModelChange(e.target.value)}
+                  className="appearance-none w-full bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-xl px-4 py-2 pr-8 text-sm text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200"
+                >
+                  {AI_MODELS.map((model) => (
+                    <option key={model.id} value={model.id}>
+                      {model.name}
+                    </option>
+                  ))}
+                </select>
+                <div className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
+                  <MoreVertical size={14} className="text-gray-400" />
+                </div>
+              </div>
+            )}
+            {/* New Chat Button for Image/Video modes */}
+            {(currentMode === 'image' || currentMode === 'video') && onNewChat && (
+              <button
+                onClick={onNewChat}
+                className={`flex items-center space-x-2 px-4 py-2 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105 ml-4 ${
+                  currentMode === 'image'
+                    ? 'bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white'
+                    : 'bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white'
+                }`}
+              >
+                <MessageSquarePlus size={16} />
+                <span className="text-sm font-medium">New Chat</span>
+              </button>
+            )}
+          </div>
+
+          {/* Right: All actions and hamburger menu */}
+          <div className="flex items-center gap-2">
+            {/* Hamburger for user actions on mobile */}
+            <div className="sm:hidden">
+              <button
+                className="p-2 rounded-lg bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700"
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                aria-label="Open user menu"
+              >
+                <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="18" x2="21" y2="18" /></svg>
+              </button>
+            </div>
+
+            {/* User actions and controls (desktop or mobile menu) */}
+            <div className={`sm:flex flex-row items-center space-x-2 ${mobileMenuOpen ? 'flex' : 'hidden'} w-full sm:w-auto bg-white dark:bg-gray-900 sm:bg-transparent sm:dark:bg-transparent p-4 sm:p-0 rounded-xl sm:rounded-none shadow-lg sm:shadow-none absolute sm:static top-14 right-0 z-50`}>
+              {/* Export Chat */}
+              {currentMode === 'chat' && (
+                <button
+                  onClick={onExportChat}
+                  disabled={messageCount === 0}
+                  className="p-2.5 rounded-xl bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 group"
+                  title="Export chat"
+                >
+                  <Download size={16} className="text-gray-600 dark:text-gray-300 group-hover:text-blue-500" />
+                </button>
+              )}
+              {/* Clear Chat */}
+              {currentMode === 'chat' && (
+                <button
+                  onClick={onClearChat}
+                  disabled={messageCount === 0}
+                  className="p-2.5 rounded-xl bg-gray-100 dark:bg-gray-800 hover:bg-red-100 dark:hover:bg-red-900/30 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 group"
+                  title="Clear chat"
+                >
+                  <Trash2 size={16} className="text-gray-600 dark:text-gray-300 group-hover:text-red-500" />
+                </button>
+              )}
+              {/* Settings - Only show for logged in users */}
+              {user && (
+                <button
+                  onClick={handleSettingsOpen}
+                  className="p-2.5 rounded-xl bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all duration-200 group"
+                  title="Settings"
+                >
+                  <Settings size={16} className="text-gray-600 dark:text-gray-300 group-hover:text-gray-800 dark:group-hover:text-gray-100" />
+                </button>
+              )}
+              {/* User Section */}
+              {user ? (
+                <div className="flex items-center space-x-3">
+                  <div className="flex items-center space-x-2 px-3 py-2 bg-green-50 dark:bg-green-900/20 rounded-xl border border-green-200 dark:border-green-800">
+                    <div className="w-6 h-6 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center overflow-hidden">
+                      {userDetails?.photo ? (
+                        <img
+                          src={userDetails.photo}
+                          alt="Profile"
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <User size={12} className="text-white" />
+                      )}
+                    </div>
+                    <span className="text-sm font-medium text-green-700 dark:text-green-300">
+                      {userDetails?.firstName || user.email?.split('@')[0]}
+                    </span>
+                  </div>
+                  <button
+                    onClick={handleSignOut}
+                    className="flex items-center space-x-2 px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
+                  >
+                    <LogOut size={16} />
+                    <span>Sign Out</span>
+                  </button>
+                </div>
+              ) : (
+                <div className="flex items-center space-x-2">
+                  <button
+                    onClick={handleSignIn}
+                    className="flex items-center space-x-2 px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200"
+                  >
+                    <LogIn size={16} />
+                    <span>Sign In</span>
+                  </button>
+                  <button
+                    onClick={handleSignUp}
+                    className="flex items-center space-x-2 px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
+                  >
+                    <UserPlus size={16} />
+                    <span>Sign Up</span>
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </header>
+
+      {/* Settings Modal */}
+      {showSettings && user && (
+        <SettingsModal
+          user={user}
+          userDetails={userDetails}
+          onClose={handleSettingsClose}
+          onUserDetailsUpdate={setUserDetails}
+        />
+      )}
+    </>
+  );
+};
